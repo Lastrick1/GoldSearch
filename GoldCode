@@ -1,0 +1,75 @@
+import sys
+import math
+import queue
+
+# Prints the contents of a 2-D array height x width
+# Toggle is necessary for Codingame if printing final answer (True) or debugging (False)
+def printMap(map, height, width, toggle):
+    for i in range(height):
+        out = ""
+        for j in range(width):
+            out += str(map[i][j])
+        if (toggle):
+            print(out)
+        else:
+            print(out, file=sys.stderr, flush = True)
+    print("", file=sys.stderr, flush = True)
+def split(word):
+    return [char for char in word]
+
+# Flood fill next spots
+def floodFill(x, y, w, h, map, traveled, cT, allTotals):
+    #print("Currently: (" + str(x) + ", " + str(y) + "); total = " + str(cT), file=sys.stderr, flush=True)
+    
+    # Check for gold
+    newTotal = cT
+    if (map[y][x].isnumeric()): newTotal = cT + int(map[y][x]) 
+    
+    # Check for next move
+    traveled[y][x] = "#"
+    if (x > 0):
+        if (traveled[y][x-1] != "#"): floodFill(x-1, y, w, h, map, traveled, newTotal, allTotals)
+    if (x < w - 1):
+        if (traveled[y][x+1] != "#"): floodFill(x+1, y, w, h, map, traveled, newTotal, allTotals)
+    if (y > 0):
+        if (traveled[y-1][x] != "#"): floodFill(x, y-1, w, h, map, traveled, newTotal, allTotals)
+    if (y < h - 1):
+        if (traveled[y+1][x] != "#"): floodFill(x, y+1, w, h, map, traveled, newTotal, allTotals)
+
+    # Out of moves, write out total
+    #print("No moves; total = " + str(newTotal), file=sys.stderr, flush=True)
+    allTotals.add(newTotal)
+
+# Read map size  
+h, w = [int(i) for i in input().split()]
+
+# Initialize 2-D array of size w and h (of default value)
+map = [["#"] * w for i in range(h)]
+traveled = [[" "] * w for i in range(h)]
+
+# Read map data, locate the start
+start_x = 0
+start_y = 0
+for i in range(h):
+    row = split(input())
+    for j in range(w):
+        data = row[j]
+        map[i][j] = data
+        if (data == "X"): # Find starting location
+            start_x = j
+            start_y = i
+        if (data == "#"): # Fill in traveled map
+            traveled[i][j] = "#"
+
+# Initialize total
+currTotal = 0
+allTotals = {0}
+
+printMap(map, h, w, False)
+print("Starting location: (" + str(start_x) + ", " + str(start_y) + ")", file=sys.stderr, flush=True)
+
+# Flood fill for score
+floodFill(start_x, start_y, w, h, map, traveled, currTotal, allTotals)
+print(max(allTotals))
+
+
